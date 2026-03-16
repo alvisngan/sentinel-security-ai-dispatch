@@ -1,4 +1,5 @@
-# Microsoft
+# Microsoft Graph API - App-only Authentication
+[TOC]
 
 ## App-only Authentication
 [Python App-only Auth Tutorial](https://learn.microsoft.com/en-us/graph/tutorials/python-app-only?tabs=aad)
@@ -79,8 +80,10 @@ Get-ServicePrincipal -Identity "<AppId-or-ObjectId-or-DisplayName>" | Format-Lis
 ### New Scope
 While the [Official RBAC Tutorial](https://learn.microsoft.com/en-us/exchange/permissions-exo/application-rbac) made no mention of creating a new scope, it is necessary for the creating a [new role assignment](#new-role-assignment).
 
+This step is very important, because it is the step where you manage which email address your app has access to.
+
 ```powershell
-# ’<your-admin-upn>’ - your email address, don't forget the single quotes!
+# ’<test-admin-upn>’ - target email address, don't forget the single quotes!
 New-ManagementScope `
 -Name "<ScopeName>" `
 -RecipientRestrictionFilter "PrimarySmtpAddress -eq '<test-mailbox-upn>'"
@@ -97,9 +100,9 @@ New-ManagementRoleAssignment [[-Name] <String>] -Role <RoleIdParameter> -App <Ob
 | Argument | Optional | Type | Discription |
 | --- | --- | --- | --- |
 | [[-Name] <String>] | Optional | string | Name for the new assignment |
-|-Role <RoleIdParameter> | N | Name, DN, GUID | [*e.g. "Application Mail.Read"](#avaliable-roles)<br>(The double quote is part of the argument) |
+|-Role <RoleIdParameter> | N | Name, DN, GUID | [*e.g. "Application Mail.Read"](#avaliable-roles)<br \>(The double quote is part of the argument) |
 | -App <ObjectID, AppID, or DisplayName> | N | GUID | App ID from Entra ID |
-| -CustomResourceScope | | Name, DN, GUID | Scope Name from the [previous section](#new-scope)<br>e.g. "ForwardingApp-MailRead-Scope" |
+| -CustomResourceScope | | Name, DN, GUID | Scope Name from the [previous section](#new-scope)<br \>e.g. "ForwardingApp-MailRead-Scope" |
 
 
 
@@ -112,6 +115,15 @@ Not sure where the `-Roles` inputs are documented, but you cannot just input any
 Get-ManagementRole | Where-Object {$_.Name -like "Application *"} | Select-Object Name
 ```
 
+### Done!
+Now you have created a [new service principal]{#new-service-principal], a [new scope](#new-scope), and a [new role assignment](#new-row-assginment),
+you have finished the role based access control.
+
+You can test if your app can access a specific email address with this command:
+```powershell
+# <target-email-address> - the email address you want to check if your app has access to
+Test-ServicePrincipalAuthorization -Identity "<AppId|ObjectId|DisplayName>" -Resource "<target-email-address>" | Format-Table
+```
 
 ## Check Progress
 ### Connect to Microsoft Exchange Online
@@ -141,4 +153,23 @@ Get-ManagementScope | Format-Table Name,ScopeRestrictionType,Exclusive,Recipient
 ```powershell
 # Check a specific scope
 Get-ManagementScope -Identity "ScopeName" | Format-List
+```
+
+### Role Assignment
+If you know the `-Role` you assigned during [New Role Assignment](#new-role-assignment), you can use it to narrow the search.
+For example if the role you set is `"Application Mail.Read"`, then you can use the following command to see the roles assigned to that privilege.
+```powershell
+Get-ManagementRoleAssignment -Role "Application Mail.Read" | Format-List Name,Role,RoleAssigneeName,RoleAssigneeType,AssignmentMethod,*Scope*
+```
+
+Alternatively if you know the App ID, you can use this to search the roles associated with the app.
+```powershell
+$sp = Get-ServicePrincipal -Identity "<AppId>"
+
+Get-ManagementRoleAssignment |
+    Where-Object {
+        $_.RoleAssigneeType -eq "ServicePrincipal" -and
+        $_.RoleAssigneeName -eq "$($sp.ObjectId)"
+    } |
+    Format-Table Name,Role,RoleAssigneeName,RoleAssigneeType,AssignmentMethod,CustomResourceScope
 ```
