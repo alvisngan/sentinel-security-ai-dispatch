@@ -1,5 +1,4 @@
 # Microsoft Graph API - App-only Authentication
-[TOC]
 
 ## App-only Authentication
 [Python App-only Auth Tutorial](https://learn.microsoft.com/en-us/graph/tutorials/python-app-only?tabs=aad)
@@ -100,9 +99,9 @@ New-ManagementRoleAssignment [[-Name] <String>] -Role <RoleIdParameter> -App <Ob
 | Argument | Optional | Type | Discription |
 | --- | --- | --- | --- |
 | [[-Name] <String>] | Optional | string | Name for the new assignment |
-|-Role <RoleIdParameter> | N | Name, DN, GUID | [*e.g. "Application Mail.Read"](#avaliable-roles)<br \>(The double quote is part of the argument) |
+|-Role <RoleIdParameter> | N | Name, DN, GUID | [*e.g. "Application Mail.Read"](#avaliable-roles)<br/>(The double quote is part of the argument) |
 | -App <ObjectID, AppID, or DisplayName> | N | GUID | App ID from Entra ID |
-| -CustomResourceScope | | Name, DN, GUID | Scope Name from the [previous section](#new-scope)<br \>e.g. "ForwardingApp-MailRead-Scope" |
+| -CustomResourceScope | | Name, DN, GUID | Scope Name from the [previous section](#new-scope)<br/>e.g. "ForwardingApp-MailRead-Scope" |
 
 
 
