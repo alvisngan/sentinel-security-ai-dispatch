@@ -13,6 +13,13 @@ The [Official RBAC Tutorial](https://learn.microsoft.com/en-us/exchange/permissi
 If you are returning to this tutorial, but you forgot what you have done, you can check your progress following the [Check Progress](#check-progress) section.
 
 
+### Remove Entra ID `Mail.Read` Permission
+The RBAC steps we are taking will add to the permissions already granted to the app.
+If the app already has `Mail.Read` permission on Entra ID, which has access to the entire company's mailbox,
+configuring the RBAC with the following steps will be useless as the app already has full access.
+
+Therefore, remember to remove the `Mail.Read` Permission on Entra ID.
+
 
 ### PowerShell Prerequisites
 To perform RBAC for your app, you will have to use PowerShell and some specific Mircosoft PowerShell Modules.
