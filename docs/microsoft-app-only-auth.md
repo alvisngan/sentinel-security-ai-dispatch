@@ -18,7 +18,7 @@ The RBAC steps we are taking will add to the permissions already granted to the 
 If the app already has `Mail.Read` permission on Entra ID, which has access to the entire company's mailbox,
 configuring the RBAC with the following steps will be useless as the app already has full access.
 
-Therefore, remember to remove the `Mail.Read` Permission on Entra ID.
+Therefore, remember to remove the `Mail.Read` permission, including the admin consent, on Entra ID.
 
 
 ### PowerShell Prerequisites
