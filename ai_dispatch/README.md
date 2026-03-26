@@ -28,9 +28,9 @@ sentinel-security-ai-dispatch/
 │       │   ├── deepseek_provider.py
 │       │   └── ollama_provider.py
 │       └── schemas/
-│           ├── client_request.py    ← copy from email_parsing_experiment
-│           ├── employee_cover.py    ← copy from email_parsing_experiment
-│           └── employee_swap.py     ← copy from email_parsing_experiment
+│           ├── client_request.py
+│           ├── employee_cover.py
+│           └── employee_swap.py 
 │
 └── src/commands/           ← root package entry points
     ├── watch.py                dispatch-watch
@@ -50,25 +50,24 @@ uv sync                # one command — installs everything into a shared .venv
 ### Watch a mailbox for new messages
 
 ```bash
-dispatch-watch
-dispatch-watch --parse --schema client_request --provider ollama --model deepseek-r1:14b
-dispatch-watch --reset-state   # wipe delta state and re-baseline
+uv run dispatch-watch
+uv run dispatch-watch --parse --schema client_request --provider ollama --model deepseek-r1:14b
+uv run dispatch-watch --reset-state   # wipe delta state and re-baseline
 ```
 
 ### List recent messages
 
 ```bash
-dispatch-list --top 20
-dispatch-list --top 5 --parse --schema client_request
+uv run dispatch-list --top 20
+uv run dispatch-list --top 5 --parse --schema client_request
 ```
 
 ### Parse an email without a live mailbox
 
 ```bash
-dispatch-parse --demo client_request
-dispatch-parse --file email.txt --schema employee_swap
-echo "Kore Inc – Jan 22nd…" | dispatch-parse
-dispatch-parse --demo employee_cover --json   # raw JSON output
+uv run dispatch-parse --demo client_request
+uv run dispatch-parse --file email.txt --schema employee_swap
+uv run dispatch-parse --demo employee_cover --json   # raw JSON output
 ```
 
 ## Adding a new schema
