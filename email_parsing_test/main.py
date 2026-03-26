@@ -1,43 +1,47 @@
 """
-main.py — run this to test the shift email parser
---------------------------------------------------
-No pip install needed. Just set your API key below and run:
+main.py
+-------
+Run this to test the shift email parser.
 
-    python main.py
+1. Set PROVIDER and your API key below.
+2. Set ACTIVE_EMAIL to whichever demo email you want to test.
+3. Run: python main.py
 
-Requirements (only one package needed):
+Requirements:
     pip install openai
 """
 
 import sys
 import os
+sys.path.insert(0, os.path.dirname(__file__))
 
-# ── Make sure the package folder is on the path ──────────────────────────────
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "shift_parser"))
+from providers.openai_provider   import OpenAIProvider
+from providers.deepseek_provider import DeepSeekProvider
+from providers.ollama_provider   import OllamaProvider
+from parser    import ShiftParser
+from schemas   import employee_swap, employee_cover, client_request
 
-from shift_parser import ShiftParser
-from shift_parser.providers import OpenAIProvider, DeepSeekProvider, OllamaProvider
-
-# ─────────────────────────────────────────────────────────────────────────────
-#  CONFIG — pick ONE provider and set your key / model below
-# ─────────────────────────────────────────────────────────────────────────────
-
-PROVIDER = "ollama"           # "ollama" | "deepseek" | "openai"
-
-OPENAI_API_KEY   = ""         # or set env var OPENAI_API_KEY
-DEEPSEEK_API_KEY = ""         # or set env var DEEPSEEK_API_KEY
-OLLAMA_MODEL     = "deepseek-r1:14b"   # any model you have pulled locally
-OLLAMA_HOST      = "http://localhost:11434"
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  DEMO EMAILS — swap in any of these, or add your own
+#  CONFIG
+# ─────────────────────────────────────────────────────────────────────────────
+
+PROVIDER = "ollama"          # "ollama" | "deepseek" | "openai"
+MODEL    = "deepseek-r1:14b" # model to use (for ollama/deepseek/openai)
+
+OPENAI_API_KEY   = ""        # or set env var OPENAI_API_KEY
+DEEPSEEK_API_KEY = ""        # or set env var DEEPSEEK_API_KEY
+
+# Which demo email to parse — change this to test different schemas
+ACTIVE_EMAIL = "client_request"   # "employee_swap" | "employee_cover" | "client_request"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  DEMO EMAILS
 # ─────────────────────────────────────────────────────────────────────────────
 
 EMAILS = {
-
-    "swap": """\
-Good afternoon,
- 
+    "client_request": """\
 Please find the security request for the function below:
   
 Kore Inc – Thursday, January 22nd – The Austin Gallery
@@ -49,73 +53,104 @@ Please let us know if you have any questions.
  
 Kind Regards,
 """,
+}
+# EMAILS = {
+# 
+#     "employee_swap": """\
+# From: Sarah Johnson <sarah.johnson@company.com>
+# To: manager@company.com
+# Subject: Shift Swap Request – Dec 14
+# 
+# Hi,
+# 
+# I'm hoping to swap my shift this Saturday (December 14th) from 9 AM to 5 PM
+# with Tom Bradley. Tom has agreed to cover my shift, and I'll take his Sunday
+# shift (December 15th) from 2 PM to 10 PM at the downtown location.
+# 
+# The reason is a family event I cannot reschedule. Could you please approve?
+# 
+# Thanks,
+# Sarah Johnson
+# Cashier – Downtown Branch
+# """,
+# 
+#     "employee_cover": """\
+# From: Mike Torres <mike.torres@company.com>
+# To: scheduling@company.com
+# Subject: Need someone to cover my Friday night shift ASAP
+# 
+# Hey team,
+# 
+# I'm sick and won't be able to make my Friday shift (Dec 6, 6 PM to 2 AM)
+# in the kitchen at the Westside location. This is urgent — I need a cover ASAP.
+# 
+# Please let me know if anyone is available.
+# 
+# Mike Torres
+# Line Cook
+# """,
+# 
+#     "client_request": """\
+# From: Jennifer Walsh <j.walsh@eventco.com>
+# To: staffing@company.com
+# Subject: Staff Request – Saturday Night Event
+# 
+# Hi,
+# 
+# We need 3 security guards at the downtown convention centre this Saturday,
+# December 14th, from 8 PM to 2 AM for a private corporate event.
+# 
+# Smart dress code required. Please confirm availability by Thursday.
+# 
+# Thanks,
+# Jennifer Walsh
+# EventCo Ltd.
+# """,
+# 
+# }
 
+# Which schema to use for each email type
+SCHEMAS = {
+    "employee_swap":    employee_swap,
+    "employee_cover":   employee_cover,
+    "client_request":   client_request,
 }
 
-# Change this to "cover" or "cancellation" to test other emails
-ACTIVE_EMAIL = "swap"
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  MAIN
 # ─────────────────────────────────────────────────────────────────────────────
 
-def make_provider():
+def main():
+    # Build the provider
     if PROVIDER == "openai":
-        key = OPENAI_API_KEY or os.getenv("OPENAI_API_KEY", "")
-        return OpenAIProvider(api_key=key)
-
+        provider = OpenAIProvider(api_key=OPENAI_API_KEY, model=MODEL)
     elif PROVIDER == "deepseek":
-        key = DEEPSEEK_API_KEY or os.getenv("DEEPSEEK_API_KEY", "")
-        return DeepSeekProvider(api_key=key)
-
+        provider = DeepSeekProvider(api_key=DEEPSEEK_API_KEY, model=MODEL)
     elif PROVIDER == "ollama":
-        return OllamaProvider(model=OLLAMA_MODEL, host=OLLAMA_HOST)
-
+        provider = OllamaProvider(model=MODEL)
     else:
         print(f"Unknown PROVIDER '{PROVIDER}'. Choose: ollama, deepseek, openai")
         sys.exit(1)
 
-
-def main():
-    print(f"Provider : {PROVIDER}")
-    print(f"Email    : '{ACTIVE_EMAIL}'")
-    print()
-
+    schema     = SCHEMAS[ACTIVE_EMAIL]
     email_text = EMAILS[ACTIVE_EMAIL]
-    print("── Email content ──────────────────────────────────────")
+
+    print(f"Schema   : {ACTIVE_EMAIL}")
+    print(f"Provider : {provider.name} / {provider.model}")
+    print(f"\n── Email ──────────────────────────────────────────")
     print(email_text)
 
-    provider = make_provider()
-    parser   = ShiftParser(provider)
+    print(f"Parsing…\n")
+    result = ShiftParser(provider=provider, schema=schema).parse(email_text)
 
-    print(f"Sending to {provider.name} / {provider.model} …\n")
-    try:
-        result = parser.parse(email_text)
-    except Exception as e:
-        print(f"Error: {e}")
-        sys.exit(1)
-
-    # ── Pretty summary ────────────────────────────────────────────────────────
+    # Pretty summary
     result.print_summary()
 
-    # ── Show individual fields ────────────────────────────────────────────────
-    print("── Individual field access ────────────────────────────")
-    print(f"  shift_change_type : {result.shift_change_type}")
-    print(f"  urgency           : {result.urgency}")
-    print(f"  approval_required : {result.approval_required}")
-    if result.requestor:
-        print(f"  requestor.name    : {result.requestor.name}")
-        print(f"  requestor.email   : {result.requestor.email}")
-    if result.original_shift:
-        print(f"  original date     : {result.original_shift.date}")
-        print(f"  original time     : {result.original_shift.start_time} – {result.original_shift.end_time}")
-    if result.action_items:
-        print(f"  action_items      : {result.action_items}")
-    print()
-
-    # ── Raw JSON ──────────────────────────────────────────────────────────────
-    print("── Raw JSON output ────────────────────────────────────")
-    print(result.to_json())
+    # Show raw JSON too
+    import json, dataclasses
+    print("── Raw JSON ───────────────────────────────────────")
+    print(json.dumps(dataclasses.asdict(result), indent=2))
 
 
 if __name__ == "__main__":
