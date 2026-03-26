@@ -22,12 +22,15 @@ ai_dispatch/
 ├── parsing/                ← workspace member (package: parsing)
 │   ├── pyproject.toml          deps: openai
 │   └── src/parsing/
+│       ├── __init__.py
 │       ├── parser.py           ShiftParser
 │       ├── providers/
+│       │   ├── __init__.py
 │       │   ├── openai_provider.py
 │       │   ├── deepseek_provider.py
 │       │   └── ollama_provider.py
 │       └── schemas/
+|           ├── __init__.py
 │           ├── client_request.py
 │           ├── employee_cover.py
 │           └── employee_swap.py 
