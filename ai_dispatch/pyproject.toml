@@ -1,0 +1,32 @@
+[project]
+name = "ai_dispatch"
+version = "0.1.0"
+description = "Outlook email ingestion and AI shift-scheduling parser"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "mail",
+    "parsing",
+]
+
+[project.scripts]
+dispatch-watch = "commands.watch:main"
+dispatch-list  = "commands.list_recent:main"
+dispatch-parse = "commands.parse:main"
+
+[build-system]
+requires      = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/commands"]
+
+[tool.uv.workspace]
+members = ["packages/mail", "packages/parsing"]
+
+[tool.uv.sources]
+mail    = { workspace = true }
+parsing = { workspace = true }
+
+[tool.uv]
+dev-dependencies = ["ruff", "mypy"]
