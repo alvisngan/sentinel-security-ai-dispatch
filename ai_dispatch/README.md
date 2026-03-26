@@ -5,7 +5,7 @@ Email ingestion + AI shift-scheduling parser for Sentinel Security.
 ## Layout
 
 ```
-sentinel-security-ai-dispatch/
+ai_dispatch/
 ├── pyproject.toml          ← workspace root + CLI entry points
 ├── uv.lock
 ├── .env.example
