@@ -80,6 +80,13 @@ class GraphClient:
         user_id = quote(mailbox_user_id)
         return self.get_json(f"/users/{user_id}?$select=id,displayName,mail,userPrincipalName")
 
+    def get_message(self, mailbox_user_id: str, message_id: str) -> dict[str, Any]:
+        user_id = quote(mailbox_user_id)
+        return self.get_json(
+            f"/users/{user_id}/messages/{message_id}",
+            params={"$select": "id,subject,receivedDateTime,from,isRead,body,internetMessageId"},
+        )
+
     def list_recent_messages(self, mailbox_user_id: str, *, top: int = 10) -> list[dict[str, Any]]:
         user_id = quote(mailbox_user_id)
         payload = self.get_json(

@@ -13,6 +13,7 @@ dependencies = [
 dispatch-watch = "commands.watch:main"
 dispatch-list  = "commands.list_recent:main"
 dispatch-parse = "commands.parse:main"
+dispatch-watch-parse = "commands.watch_parse:main"
 
 [build-system]
 requires      = ["hatchling"]
