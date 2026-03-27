@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
-dev = [
+dev-dependencies = [
     { name = "mypy" },
     { name = "ruff" },
 ]
@@ -31,7 +31,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [
+dev-dependencies = [
     { name = "mypy" },
     { name = "ruff" },
 ]

@@ -1,3 +1,7 @@
+[build-system]
+requires      = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "ai_dispatch"
 version = "0.1.0"
@@ -15,9 +19,8 @@ dispatch-list  = "commands.list_recent:main"
 dispatch-parse = "commands.parse:main"
 dispatch-watch-parse = "commands.watch_parse:main"
 
-[build-system]
-requires      = ["hatchling"]
-build-backend = "hatchling.build"
+[dependency-groups]
+dev-dependencies = ["ruff", "mypy"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/commands"]
@@ -28,6 +31,3 @@ members = ["packages/mail", "packages/parsing"]
 [tool.uv.sources]
 mail    = { workspace = true }
 parsing = { workspace = true }
-
-[tool.uv]
-dev-dependencies = ["ruff", "mypy"]
