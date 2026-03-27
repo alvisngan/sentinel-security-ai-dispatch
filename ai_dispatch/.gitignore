@@ -44,3 +44,7 @@ coverage.xml
 *.swp
 *.swo
 
+
+# App
+## Graph states
+.graph_delta_state.json
