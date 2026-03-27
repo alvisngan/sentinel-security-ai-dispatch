@@ -11,6 +11,7 @@ requires-python = ">=3.12"
 dependencies = [
     "mail",
     "parsing",
+    "worker-queue",
 ]
 
 [project.scripts]
@@ -18,6 +19,7 @@ dispatch-watch = "commands.watch:main"
 dispatch-list  = "commands.list_recent:main"
 dispatch-parse = "commands.parse:main"
 dispatch-watch-parse = "commands.watch_parse:main"
+dispatch-parse-queue = "commands.parse_queue:main"
 
 [dependency-groups]
 dev-dependencies = ["ruff", "mypy"]
@@ -26,8 +28,13 @@ dev-dependencies = ["ruff", "mypy"]
 packages = ["src/commands"]
 
 [tool.uv.workspace]
-members = ["packages/mail", "packages/parsing"]
+members = [
+    "packages/mail",
+    "packages/parsing",
+    "packages/worker_queue",
+]
 
 [tool.uv.sources]
 mail    = { workspace = true }
 parsing = { workspace = true }
+worker-queue = { workspace = true }

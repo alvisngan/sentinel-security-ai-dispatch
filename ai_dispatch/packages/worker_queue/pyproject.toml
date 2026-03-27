@@ -1,0 +1,13 @@
+[project]
+name = "worker-queue"
+version = "0.1.0"
+description = "Generic background worker queue for decoupling producers from slow consumers."
+requires-python = ">=3.11"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/worker_queue"]
