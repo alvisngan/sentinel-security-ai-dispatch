@@ -14,6 +14,35 @@ Usage:
 """
 
 import json
+import re
+
+
+# Matches <think>...</think> blocks emitted by reasoning models (e.g. deepseek-r1).
+# re.DOTALL makes '.' match newlines so the whole block is captured in one go.
+_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL | re.IGNORECASE)
+
+
+def _extract_json(raw: str) -> str:
+    """
+    Clean raw LLM output down to a bare JSON string.
+
+    Handles (in order):
+      1. <think>...</think> reasoning blocks  (deepseek-r1, qwq, etc.)
+      2. ```json ... ``` or ``` ... ``` markdown fences
+      3. Leading/trailing whitespace
+    """
+    # 1. Strip reasoning block first — it may contain curly braces that confuse
+    #    later steps.
+    text = _THINK_RE.sub("", raw).strip()
+
+    # 2. Strip markdown fences if present.
+    if text.startswith("```"):
+        # Remove the opening fence line (e.g. "```json")
+        text = "\n".join(text.splitlines()[1:])
+    if text.endswith("```"):
+        text = "\n".join(text.splitlines()[:-1])
+
+    return text.strip()
 
 
 class ShiftParser:
@@ -53,15 +82,11 @@ class ShiftParser:
             user   = f"Parse this shift email:\n\n{email_text}",
         )
 
-        # Strip accidental markdown fences (some models add ```json ... ```)
-        text = raw.strip()
-        if text.startswith("```"):
-            text = "\n".join(text.splitlines()[1:])
-        if text.endswith("```"):
-            text = "\n".join(text.splitlines()[:-1])
+        # Clean the raw response before parsing
+        text = _extract_json(raw)
 
         # Parse the JSON and build the dataclass
-        data   = json.loads(text.strip())
+        data   = json.loads(text)
         result = self.schema.Result.from_dict(data)
 
         # Stamp which provider/model was used
