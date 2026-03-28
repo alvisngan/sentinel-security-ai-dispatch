@@ -16,6 +16,9 @@ Usage:
 import json
 import re
 
+from parsing.router import SchemaRouter
+from parsing.schemas import REGISTRY as SCHEMA_REGISTRY
+
 
 # Matches <think>...</think> blocks emitted by reasoning models (e.g. deepseek-r1).
 # re.DOTALL makes '.' match newlines so the whole block is captured in one go.
@@ -51,19 +54,23 @@ class ShiftParser:
 
     Args:
         provider: An LLM provider (OpenAIProvider, DeepSeekProvider, OllamaProvider).
-        schema:   A schema module from the schemas/ folder. Each schema module
-                  contains a SYSTEM_PROMPT and a dataclass with a from_dict() method.
+        schema:   A schema module from the schemas/ folder. If omitted, the schema
+                  is detected automatically from the email using SchemaRouter.
+                  Each schema module contains a SYSTEM_PROMPT and a dataclass
+                  with a from_dict() method.
 
     The flow is:
-        1. Send the email text to the LLM using the schema's SYSTEM_PROMPT.
-        2. The LLM returns a JSON string.
-        3. Parse the JSON into the schema's dataclass.
-        4. Return the dataclass instance.
+        1. If no schema is given, classify the email with SchemaRouter.
+        2. Send the email text to the LLM using the schema's SYSTEM_PROMPT.
+        3. The LLM returns a JSON string.
+        4. Parse the JSON into the schema's dataclass.
+        5. Return the dataclass instance.
     """
 
-    def __init__(self, provider, schema):
+    def __init__(self, provider, schema=None):
         self.provider = provider
         self.schema   = schema
+        self._router  = None if schema else SchemaRouter(provider)
 
     def parse(self, email_text: str):
         """
@@ -76,21 +83,28 @@ class ShiftParser:
             A dataclass instance defined in the schema module,
             with all extracted fields filled in.
         """
-        # Ask the LLM to extract the shift info
-        raw = self.provider.complete(
-            system = self.schema.SYSTEM_PROMPT,
+        schema = self.schema
+
+        if schema is None:
+            key    = self._router.classify(email_text)
+            schema = SCHEMA_REGISTRY[key]
+
+        raw    = self.provider.complete(
+            system = schema.SYSTEM_PROMPT,
             user   = f"Parse this shift email:\n\n{email_text}",
         )
+        text   = _extract_json(raw)
 
-        # Clean the raw response before parsing
-        text = _extract_json(raw)
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise ValueError(
+                f"Failed to parse LLM response as JSON.\n"
+                f"Raw output:\n{raw}\n"
+                f"After cleaning:\n{text}"
+            ) from exc
 
-        # Parse the JSON and build the dataclass
-        data   = json.loads(text)
-        result = self.schema.Result.from_dict(data)
-
-        # Stamp which provider/model was used
+        result = schema.Result.from_dict(data)
         result.provider_name = self.provider.name
         result.model_name    = self.provider.model
-
         return result

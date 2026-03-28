@@ -16,6 +16,9 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 
+# ── Discription  ──────────────────────────────────────────────────────────────
+DESCRIPTION = "An EMPLOYEE asking someone to cover their shift"
+
 # ── Prompt ────────────────────────────────────────────────────────────────────
 
 SYSTEM_PROMPT = """

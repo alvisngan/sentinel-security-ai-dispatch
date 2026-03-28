@@ -10,3 +10,6 @@
 ## In Progress
 
 ## Done
+
+- [x] Parsing auto schema routing
+- [x] Queuing in case there are multiple emails

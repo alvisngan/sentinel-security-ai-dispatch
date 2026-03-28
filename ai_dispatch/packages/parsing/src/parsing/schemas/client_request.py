@@ -15,6 +15,8 @@ Example email:
 from dataclasses import dataclass, field
 from typing import Optional
 
+# ── Discription  ──────────────────────────────────────────────────────────────
+DESCRIPTION = "A CLIENT asking for staff to be assigned to a shift"
 
 # ── Prompt ────────────────────────────────────────────────────────────────────
 

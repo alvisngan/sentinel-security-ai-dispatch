@@ -48,9 +48,9 @@ def parse_args() -> argparse.Namespace:
             "never delay email detection."
         )
     )
-    p.add_argument("--schema", default="client_request",
+    p.add_argument("--schema", default=None,
                    choices=list(SCHEMA_REGISTRY),
-                   help="Schema to parse against (default: client_request).")
+                   help="Schema to parse against. Omit to auto-detect from email content.")
     p.add_argument("--provider", default="ollama",
                    choices=["ollama", "deepseek", "openai"])
     p.add_argument("--model", default=None,
@@ -75,7 +75,7 @@ def parse_args() -> argparse.Namespace:
 # ── Parser construction ───────────────────────────────────────────────────────
 
 def build_shift_parser(args: argparse.Namespace) -> ShiftParser:
-    schema = SCHEMA_REGISTRY[args.schema]
+    schema = SCHEMA_REGISTRY[args.schema] if args.schema else None
 
     if args.provider == "ollama":
         provider = OllamaProvider(model=args.model or "deepseek-r1:14b")
@@ -211,7 +211,7 @@ def main() -> int:
         mailbox_label = profile.get("mail") or profile.get("userPrincipalName") or config.mailbox_user_id
         display_name = profile.get("displayName") or mailbox_label
         print(f"Watching mailbox : {display_name} <{mailbox_label}>")
-        print(f"Schema           : {args.schema}")
+        print(f"Schema           : {args.schema or 'auto'}")
         print(f"Provider         : {parser.provider.name} / {parser.provider.model}")
         print(f"Polling every    : {poll_seconds}s")
         print(f"State file       : {config.state_file}")

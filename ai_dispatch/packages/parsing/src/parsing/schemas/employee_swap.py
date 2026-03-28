@@ -14,6 +14,8 @@ Example email:
 from dataclasses import dataclass, field
 from typing import Optional
 
+# ── Discription ───────────────────────────────────────────────────────────────
+DESCRIPTION = "An EMPLOYEE asking to swap a shift with a colleague"
 
 # ── Prompt ────────────────────────────────────────────────────────────────────
 # This is the instruction sent to the LLM. It defines exactly what
