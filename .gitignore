@@ -43,3 +43,8 @@ coverage.xml
 .vscode/
 *.swp
 *.swo
+
+
+# App
+## Graph states
+.graph_delta_state.json

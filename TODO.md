@@ -5,6 +5,7 @@
 - [ ] Multiple shift requests in one email
 - [ ] Shift API package
 - [ ] Change the schema to match Humanity API
+- [ ] Error handling - LLM output failure -> redo prompt
 
 ## In Progress
 
